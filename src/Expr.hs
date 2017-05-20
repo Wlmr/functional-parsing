@@ -41,16 +41,15 @@ var = word >-> Var
 
 num = number >-> Num
 
-mulOp = lit '*' >-> (\ _ -> Mul) !
-        lit '/' >-> (\ _ -> Div)
+mulOp = lit '*' >-> const  Mul !
+        lit '/' >-> const  Div
 
-addOp = lit '+' >-> (\ _ -> Add) !
-        lit '-' >-> (\ _ -> Sub)
+addOp = lit '+' >-> const  Add !
+        lit '-' >-> const  Sub
 
 bldOp e (oper,e') = oper e e'
 
-factor = num !
-         var !
+factor = num ! var !
          lit '(' -# expr #- lit ')' !
          err "illegal factor"
 

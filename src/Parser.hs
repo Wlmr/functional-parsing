@@ -33,7 +33,6 @@ token m = m #- spaces
 letter :: Parser Char
 letter = char ? isAlpha
 
-
 word :: Parser String
 word = token (letter # iter letter >-> cons)
 
@@ -45,7 +44,7 @@ accept :: String -> Parser String
 accept w = token (chars (length w)) ? (==w)
 
 require :: String -> Parser String
-require w = accept w ! err "invalid string argument"
+require w = accept w ! err "INBETWEENERS1!:"
 
 lit :: Char -> Parser Char
 lit c = token char ? (==c)

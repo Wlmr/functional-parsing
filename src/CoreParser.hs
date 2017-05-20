@@ -1,11 +1,11 @@
 module CoreParser(Parser, char, return, fail, (#), (!), (?), (#>), (>->),
                   Parse, parse, toString, fromString) where
 import Prelude hiding (return, fail)
-infixl 3 !
 infixl 7 ?
 infixl 6 #
 infixl 5 >->
 infixl 4 #>
+infixl 3 !
 
 class Parse a where
     parse :: Parser a
