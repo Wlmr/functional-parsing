@@ -37,7 +37,7 @@ buildRead = Read'
 write = accept "write" -# Expr.parse #- require ";" >-> buildWrite
 buildWrite = Write
 
-comment = accept "--" -# line  #- require "\n" >-> buildComment
+comment = accept "--" -# commentLine  #- require "\n" >-> buildComment
 buildComment = Comment
 
 
@@ -65,16 +65,16 @@ exec (Comment str : stmts) dict input =
 indent :: Int -> String
 indent i = take (2 * i) (repeat ' ') -- 2 spaces for indentation
 
-shw :: Int -> Statement -> String
-shw i (Assignment var expr)      = indent i ++ var ++ " := " ++ Expr.toString expr ++ ";\n"
-shw i (If cond ifStmt elseStmt)  = indent i ++ "if " ++ Expr.toString cond ++ " then\n" ++ shw (i + 1) ifStmt ++ indent i ++ "else\n" ++ shw (i + 1) elseStmt
-shw i (While cond stmts)         = indent i ++ "while " ++ Expr.toString cond ++ " do\n" ++ shw (i + 1) stmts
-shw i (Block stmts)              = indent i ++ "begin\n" ++ concatMap (shw (i + 1)) stmts ++ indent i ++ "end\n"
-shw i (Read' var)                 = indent i ++ "read " ++ var ++ ";\n"
-shw i (Write expr)               = indent i ++ "write " ++ Expr.toString expr ++ ";\n"
-shw i (Skip)                     = indent i ++ "skip;\n"
-shw i (Comment comment)          = indent i ++ "-- " ++ comment ++ "\n"
+toString' :: Int -> Statement -> String
+toString' i (Assignment var expr)      = indent i ++ var ++ " := " ++ Expr.toString expr ++ ";\n"
+toString' i (If cond ifStmt elseStmt)  = indent i ++ "if " ++ Expr.toString cond ++ " then\n" ++ toString' (i + 1) ifStmt ++ indent i ++ "else\n" ++ toString' (i + 1) elseStmt
+toString' i (While cond stmts)         = indent i ++ "while " ++ Expr.toString cond ++ " do\n" ++ toString' (i + 1) stmts
+toString' i (Block stmts)              = indent i ++ "begin\n" ++ concatMap (toString' (i + 1)) stmts ++ indent i ++ "end\n"
+toString' i (Read' var)                = indent i ++ "read " ++ var ++ ";\n"
+toString' i (Write expr)               = indent i ++ "write " ++ Expr.toString expr ++ ";\n"
+toString' i (Skip)                     = indent i ++ "skip;\n"
+toString' i (Comment comment)          = indent i ++ "-- " ++ comment ++ "\n"
 
 instance Parse Statement where
   parse = assignment ! skip ! if' ! while ! read' ! write ! block ! comment
-  toString = shw 0
+  toString = toString' 0
