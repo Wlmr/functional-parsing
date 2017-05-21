@@ -6,11 +6,6 @@ import Data.List
 import Prelude hiding (return, fail)
 newtype T = Program [Statement.T] deriving Show
 
---statements :: Parser T
---statements = iter Statement.parse >-> buildStatements
---buildStatements :: [Statement.T] -> T
---buildStatements = Program
-
 instance Parse T where
     parse = iter Statement.parse >-> Program
     toString (Program stmts) = concatMap Statement.toString stmts
