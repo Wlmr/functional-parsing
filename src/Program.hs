@@ -13,10 +13,7 @@ buildStatements = Program
 
 instance Parse T where
     parse = iter Statement.parse >-> Program
-    toString (Program stmts) = intercalate "\n" $ map toString stmts
+    toString (Program stmts) = concatMap Statement.toString stmts
 
 exec :: T -> [Integer] -> [Integer]
 exec (Program stmts) = Statement.exec stmts Dictionary.empty
-
--- toString' :: T -> String
--- toString' (Program stmts) = concatMap Statement.toString stmts

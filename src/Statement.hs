@@ -15,8 +15,6 @@ data Statement =
     Block [Statement]
     deriving Show
 
-comment = accept "--" -# iter (word "\\n") #- require "\n" >-> buildComment
-buildComment s = Comment s
 
 assignment = word #- accept ":=" # Expr.parse #- require ";" >-> buildAss
 buildAss (v, e) = Assignment v e
@@ -39,9 +37,11 @@ buildRead = Read'
 write = accept "write" -# Expr.parse #- require ";" >-> buildWrite
 buildWrite = Write
 
+comment = (accept "--" -# iter letter!spaces #- require "\\n")  >-> buildComment
+buildComment = Comment
 
 statement :: Parser Statement
-statement = assignment ! skip ! read' ! block ! if' ! while ! write
+statement = assignment ! skip ! read' ! block ! if' ! while ! write ! comment
 
 exec :: [T] -> Dictionary.T String Integer -> [Integer] -> [Integer]
 exec [] _ _ = []

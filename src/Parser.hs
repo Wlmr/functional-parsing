@@ -1,5 +1,5 @@
 module Parser(module CoreParser, T, digit, digitVal, chars, letter, err,
-              lit, number, iter, accept, require, token,
+              lit, antiLit, number, iter, accept, require, token,
               spaces, word, (-#), (#-)) where
 import Prelude hiding (return, fail)
 import Data.Char
@@ -13,9 +13,7 @@ err message cs = error (message++" near "++cs++"\n")
 
 iter :: Parser a -> Parser [a]
 iter m = m # iter m >-> cons ! return []
-
 cons(a, b) = a:b
-
 
 (-#) :: Parser a -> Parser b -> Parser b
 m -# n = m # n >-> snd
@@ -25,7 +23,6 @@ m #- n = m # n >-> fst
 
 spaces :: Parser String
 spaces  = iter (char ? isSpace)
-
 
 token :: Parser a -> Parser a
 token m = m #- spaces
@@ -48,6 +45,9 @@ require w = accept w ! err "INBETWEENERS1!:"
 
 lit :: Char -> Parser Char
 lit c = token char ? (==c)
+
+antiLit :: Char -> Parser Char
+antiLit c = token char ? not.(==c)
 
 digit :: Parser Char
 digit = char ? isDigit
