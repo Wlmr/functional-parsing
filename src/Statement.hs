@@ -63,7 +63,7 @@ exec (Comment str : stmts) dict input =
     exec stmts dict input
 
 indent :: Int -> String
-indent i = take (2 * i) (repeat ' ') -- 2 spaces for indentation
+indent i = replicate (2 * i) ' ' -- 2 spaces for indentation
 
 toString' :: Int -> Statement -> String
 toString' i (Assignment var expr)      = indent i ++ var ++ " := " ++ Expr.toString expr ++ ";\n"
