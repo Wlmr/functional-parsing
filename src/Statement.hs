@@ -63,18 +63,22 @@ exec (Comment str : stmts) dict input =
     exec stmts dict input
 
 indent :: Int -> String
-indent i = replicate (2 * i) ' ' -- 2 spaces for indentation
+indent i = replicate (2 * i) ' '
+
+statement = assignment ! skip ! if' ! while ! read' ! write ! block ! comment
 
 toString' :: Int -> Statement -> String
 toString' i (Assignment var expr)      = indent i ++ var ++ " := " ++ Expr.toString expr ++ ";\n"
-toString' i (If cond ifStmt elseStmt)  = indent i ++ "if " ++ Expr.toString cond ++ " then\n" ++ toString' (i + 1) ifStmt ++ indent i ++ "else\n" ++ toString' (i + 1) elseStmt
-toString' i (While cond stmts)         = indent i ++ "while " ++ Expr.toString cond ++ " do\n" ++ toString' (i + 1) stmts
-toString' i (Block stmts)              = indent i ++ "begin\n" ++ concatMap (toString' (i + 1)) stmts ++ indent i ++ "end\n"
+toString' i (If cond ifs elses)  = indent i ++ "if " ++ Expr.toString cond ++ " then\n" ++ toString' (i + 1) ifs ++ indent i ++ "else\n" ++ toString' (i + 1) elses
+toString' i (While cond statements)         = indent i ++ "while " ++ Expr.toString cond ++ " do\n" ++ toString' (i + 1) statements
+toString' i (Block statements)              = indent i ++ "begin\n" ++ concatMap (toString' (i + 1)) statements ++ indent i ++ "end\n"
 toString' i (Read' var)                = indent i ++ "read " ++ var ++ ";\n"
 toString' i (Write expr)               = indent i ++ "write " ++ Expr.toString expr ++ ";\n"
-toString' i (Skip)                     = indent i ++ "skip;\n"
+toString' i Skip                       = indent i ++ "skip;\n"
 toString' i (Comment comment)          = indent i ++ "-- " ++ comment ++ "\n"
 
+
+
 instance Parse Statement where
-  parse = assignment ! skip ! if' ! while ! read' ! write ! block ! comment
+  parse = statement
   toString = toString' 0
