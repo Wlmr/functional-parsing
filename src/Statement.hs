@@ -19,14 +19,14 @@ data Statement =
 assignment = word #- accept ":=" # Expr.parse #- require ";" >-> buildAss
 buildAss (v, e) = Assignment v e
 
-skip = (accept "skip" -# require ";") >-> buildSkip
+skip = (accept "skip" # require ";") >-> buildSkip
 buildSkip _ = Skip
 
 block = accept "begin" -# iter parse #- require "end" >-> buildBlock
 buildBlock = Block
 
 if' = accept "if" -# Expr.parse #- require "then" # parse #- require "else" # parse >-> buildIf'
-buildIf' ((condition,th),el) = If condition el th
+buildIf' ((condition,th),el) = If condition th el
 
 while = accept "while" -# Expr.parse #- require "do" # parse >-> buildWhile
 buildWhile (cond, stmt) = While cond stmt
@@ -37,11 +37,9 @@ buildRead = Read'
 write = accept "write" -# Expr.parse #- require ";" >-> buildWrite
 buildWrite = Write
 
-comment = (accept "--" -# iter letter!spaces #- require "\\n")  >-> buildComment
+comment = accept "--" -# line  #- require "\n" >-> buildComment
 buildComment = Comment
 
-statement :: Parser Statement
-statement = assignment ! skip ! read' ! block ! if' ! while ! write ! comment
 
 exec :: [T] -> Dictionary.T String Integer -> [Integer] -> [Integer]
 exec [] _ _ = []
@@ -64,28 +62,19 @@ exec (Write expr : stmts) dict input =
 exec (Comment str : stmts) dict input =
     exec stmts dict input
 
+indent :: Int -> String
+indent i = take (2 * i) (repeat ' ') -- 2 spaces for indentation
+
+shw :: Int -> Statement -> String
+shw i (Assignment var expr)      = indent i ++ var ++ " := " ++ Expr.toString expr ++ ";\n"
+shw i (If cond ifStmt elseStmt)  = indent i ++ "if " ++ Expr.toString cond ++ " then\n" ++ shw (i + 1) ifStmt ++ indent i ++ "else\n" ++ shw (i + 1) elseStmt
+shw i (While cond stmts)         = indent i ++ "while " ++ Expr.toString cond ++ " do\n" ++ shw (i + 1) stmts
+shw i (Block stmts)              = indent i ++ "begin\n" ++ concatMap (shw (i + 1)) stmts ++ indent i ++ "end\n"
+shw i (Read' var)                 = indent i ++ "read " ++ var ++ ";\n"
+shw i (Write expr)               = indent i ++ "write " ++ Expr.toString expr ++ ";\n"
+shw i (Skip)                     = indent i ++ "skip;\n"
+shw i (Comment comment)          = indent i ++ "-- " ++ comment ++ "\n"
+
 instance Parse Statement where
-  parse = statement
-  toString = toString' 0
-
-tabsize = 2
-
-toString' :: Int -> Statement -> String
-toString' indent (Assignment var expr) =
-    replicate indent ' ' ++ var ++ ":=" ++ toString expr ++ ";"
-toString' indent Skip = replicate indent ' ' ++ "skip;"
-toString' indent (Block block) =
-    replicate indent ' ' ++ "begin"
-    ++ concatMap (toString' (indent+tabsize)) block
-    ++ replicate indent ' ' ++ "end"
-toString' indent (If cond th el) =
-    replicate indent ' ' ++ "if" ++ Expr.toString cond ++ "then\n"
-    ++ toString' (indent+tabsize) th ++ replicate indent ' '
-    ++ "else\n" ++ toString' (indent+tabsize) el
-toString' indent (While cond body) =
-    "while " ++ Expr.toString cond ++ "do\n"
-    ++ toString' (indent+tabsize) body
-toString' indent (Read' var) = replicate indent ' ' ++ "read" ++ var ++ ";\n"
-toString' indent (Write expr) =
-    replicate indent ' ' ++ "write" ++ Expr.toString expr ++ ";"
-toString' indent (Comment s) = replicate indent ' ' ++ "--" ++ s
+  parse = assignment ! skip ! if' ! while ! read' ! write ! block ! comment
+  toString = shw 0

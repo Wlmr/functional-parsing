@@ -28,7 +28,7 @@ import Parser hiding (T)
 import qualified Dictionary
 
 data Expr = Num Integer | Var String | Add Expr Expr
-       | Sub Expr Expr | Mul Expr Expr | Div Expr Expr
+       | Sub Expr Expr | Mul Expr Expr | Div Expr Expr | Exp Expr Expr
          deriving Show
 
 type T = Expr
@@ -42,7 +42,8 @@ var = word >-> Var
 num = number >-> Num
 
 mulOp = lit '*' >-> const  Mul !
-        lit '/' >-> const  Div
+        lit '/' >-> const  Div !
+        lit '^' >-> const Exp
 
 addOp = lit '+' >-> const  Add !
         lit '-' >-> const  Sub
@@ -68,12 +69,14 @@ shw prec (Add t u) = parens (prec>5) (shw 5 t ++ "+" ++ shw 5 u)
 shw prec (Sub t u) = parens (prec>5) (shw 5 t ++ "-" ++ shw 6 u)
 shw prec (Mul t u) = parens (prec>6) (shw 6 t ++ "*" ++ shw 6 u)
 shw prec (Div t u) = parens (prec>6) (shw 6 t ++ "/" ++ shw 7 u)
+shw prec (Exp t u) = parens (prec>6) (shw 7 t ++ "^" ++ shw 8 u)
 
 value :: Expr -> Dictionary.T String Integer -> Integer
 value (Num n) _    = n
 value (Add l r) d  = value l d + value r d
 value (Sub l r) d  = value l d - value r d
 value (Mul l r) d  = value l d * value r d
+value (Exp l r) d  = value l d ^ value r d
 value (Div l r) d  = case value r d of
   0  -> error "DIV ZERO ANOMALY DETECTED"
   _  -> value l d `div` value r d
