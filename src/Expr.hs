@@ -25,6 +25,7 @@ module Expr(Expr, T, parse, fromString, value, toString) where
 -}
 import Prelude hiding (return, fail)
 import Parser hiding (T)
+import Data.Maybe
 import qualified Dictionary
 
 data Expr = Num Integer | Var String | Add Expr Expr
@@ -62,14 +63,14 @@ expr = term #> expr'
 
 parens cond str = if cond then "(" ++ str ++ ")" else str
 
-shw :: Int -> Expr -> String
-shw prec (Num n) = show n
-shw prec (Var v) = v
-shw prec (Add t u) = parens (prec>5) (shw 5 t ++ "+" ++ shw 5 u)
-shw prec (Sub t u) = parens (prec>5) (shw 5 t ++ "-" ++ shw 6 u)
-shw prec (Mul t u) = parens (prec>6) (shw 6 t ++ "*" ++ shw 6 u)
-shw prec (Div t u) = parens (prec>6) (shw 6 t ++ "/" ++ shw 7 u)
-shw prec (Exp t u) = parens (prec>6) (shw 7 t ++ "^" ++ shw 8 u)
+toString' :: Int -> Expr -> String
+toString' prec (Add t u) = parens (prec>5) (toString' 5 t ++ "+" ++ toString' 5 u)
+toString' prec (Sub t u) = parens (prec>5) (toString' 5 t ++ "-" ++ toString' 6 u)
+toString' prec (Mul t u) = parens (prec>6) (toString' 6 t ++ "*" ++ toString' 6 u)
+toString' prec (Div t u) = parens (prec>6) (toString' 6 t ++ "/" ++ toString' 7 u)
+toString' prec (Exp t u) = parens (prec>6) (toString' 7 t ++ "^" ++ toString' 8 u)
+toString' prec (Num n) = show n
+toString' prec (Var v) = v
 
 value :: Expr -> Dictionary.T String Integer -> Integer
 value (Num n) _    = n
@@ -77,13 +78,12 @@ value (Add l r) d  = value l d + value r d
 value (Sub l r) d  = value l d - value r d
 value (Mul l r) d  = value l d * value r d
 value (Exp l r) d  = value l d ^ value r d
+value (Var v)   d  = fromMaybe (error "WARNING: ROUGE VARIABLE") (Dictionary.lookup v d)
 value (Div l r) d  = case value r d of
   0  -> error "DIV ZERO ANOMALY DETECTED"
   _  -> value l d `div` value r d
-value (Var v)   d  = case Dictionary.lookup v d of
- Nothing -> error "WARNING: ROUGE VARIABLE"
- Just a  -> a
+
 
 instance Parse Expr where
     parse = expr
-    toString = shw 0
+    toString = toString' 0
