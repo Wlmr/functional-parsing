@@ -1,49 +1,45 @@
--- This file has been generated from package.yaml by hpack version 0.21.2.
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.31.0.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: c838be251b12c54252a8cd62b8985638bf345e23f54ab46647de27319da56add
+-- hash: 9399c698e868eaaf51f45dfd042bfb05b4608f877cdb8091603774f71b183aba
 
 name:           functional-parsing
 version:        0.1.0.0
-description:    Please see the README on Github at <https://github.com/githubuser/functional-parsing#readme>
-homepage:       https://github.com/githubuser/functional-parsing#readme
-bug-reports:    https://github.com/githubuser/functional-parsing/issues
-author:         Author name here
-maintainer:     example@example.com
-copyright:      2018 Author name here
+description:    Please see the README on GitHub at <https://github.com/wlmr/factorizer#readme>
+homepage:       https://github.com/wlmr/functional-parsing#readme
+bug-reports:    https://github.com/wlmr/functional-parsing/issues
+author:         Wilmer Nilsson
+maintainer:     wlmr@pm.me
+copyright:      MIT
 license:        BSD3
 license-file:   LICENSE
 build-type:     Simple
-cabal-version:  >= 1.10
-
 extra-source-files:
-    ChangeLog.md
     README.md
+    ChangeLog.md
 
 source-repository head
   type: git
-  location: https://github.com/githubuser/functional-parsing
+  location: https://github.com/wlmr/functional-parsing
 
 library
   exposed-modules:
       CoreParser
       Dictionary
       Expr
-      Lib
       Parser
       Program
       Statement
-      TestExpr
-      TestParser
-      TestProgram
-      TestStatement
   other-modules:
       Paths_functional_parsing
   hs-source-dirs:
       src
   build-depends:
       base >=4.7 && <5
+    , directory
   default-language: Haskell2010
 
 executable functional-parsing-exe
@@ -52,19 +48,20 @@ executable functional-parsing-exe
       Paths_functional_parsing
   hs-source-dirs:
       app
-  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N -O2
   build-depends:
       base >=4.7 && <5
+    , directory
     , functional-parsing
   default-language: Haskell2010
 
 test-suite functional-parsing-test
   type: exitcode-stdio-1.0
-  main-is: Spec.hs
+  main-is: TestProgram.hs
   other-modules:
+      Spec
       TestExpr
       TestParser
-      TestProgram
       TestStatement
       Paths_functional_parsing
   hs-source-dirs:
@@ -72,5 +69,6 @@ test-suite functional-parsing-test
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
+    , directory
     , functional-parsing
   default-language: Haskell2010
