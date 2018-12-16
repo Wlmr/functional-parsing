@@ -5,12 +5,8 @@ import System.IO
 import System.Directory
 
 main :: IO ()
-main = inputChecker [] >>= (\(program:variables) -> (putStrLn . (++) "\nResults: " . show . Program.exec (fromString program) . read . head) variables)
+main = inputChecker [] >>= (\(prog:vars) -> (putStrLn . (++) "\nResults: " . show . Program.exec (fromString prog) . read . head) vars)
 
 inputChecker :: [String] -> IO [String]
-inputChecker (prog:vars) = doesFileExist prog >>= (\exists -> if exists then readFile prog >>= (\content -> return (content:vars)) else return (prog:vars))
-inputChecker  something  = sequence [putStrLn "Enter filepath or program: " >> getLine, putStrLn "\nEnter variables, e.g. [v1,...,vN]" >> getLine] >>= inputChecker 
-                            
-
-
-
+inputChecker (prog:vars) = doesFileExist prog >>= (\exists -> if exists then readFile prog >>= (\cont -> return (cont:vars)) else return (prog:vars))
+inputChecker  something  = mapM ((>> getLine) . putStrLn) ["Enter filepath or program", "Enter variables, e.g. [v1,...,vN]"] >>= inputChecker 
